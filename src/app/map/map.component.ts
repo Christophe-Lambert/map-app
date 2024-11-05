@@ -1,10 +1,13 @@
 import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { LocationService } from '../services/location.service';
+import { Location } from '../models/location.model';
 
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
-  standalone: true
+  standalone: true,
+  providers: [LocationService]
 })
 export class MapComponent implements OnInit, AfterViewInit {
   private map!: any;
@@ -13,9 +16,18 @@ export class MapComponent implements OnInit, AfterViewInit {
     { lat: 32.5568, lng: 35.8469 }  // Irbid
   ];
 
-  constructor() { }
+  constructor(private locationService: LocationService) { }
 
-  ngOnInit() { }
+  ngOnInit() {
+    this.locationService.getAllLocations().subscribe({
+      next: (locations: Location[]) => {
+        this.markers = this.locationService.mapLocationsToMarkers(locations);
+      },
+      error: (error) => {
+        console.error("Erreur lors de la récupération des locations :", error);
+      }
+    });
+   }
 
   async ngAfterViewInit() {
     if (typeof window !== 'undefined') { // Assurez-vous que l'environnement est le navigateur
