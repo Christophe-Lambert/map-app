@@ -1,6 +1,10 @@
-import { Component, OnInit, AfterViewInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { LocationService } from '../services/location.service';
 import { Location } from '../models/location.model';
+import * as L from 'leaflet';
+
+declare var window: any; 
 
 @Component({
   selector: 'app-map',
@@ -16,7 +20,7 @@ export class MapComponent implements OnInit, AfterViewInit {
     { lat: 32.5568, lng: 35.8469 }  // Irbid
   ];
 
-  constructor(private locationService: LocationService) { }
+  constructor(@Inject(PLATFORM_ID) private platformId: Object, private locationService: LocationService) { }
 
   ngOnInit() {
     this.locationService.getAllLocations().subscribe({
@@ -30,15 +34,31 @@ export class MapComponent implements OnInit, AfterViewInit {
    }
 
   async ngAfterViewInit() {
-    if (typeof window !== 'undefined') { // Assurez-vous que l'environnement est le navigateur
-      const L = await import('leaflet'); // Import dynamique de leaflet
+    // Vérifiez que nous sommes dans un environnement navigateur
+    //if (typeof window !== 'undefined' && typeof window.document !== 'undefined') {
+      if (isPlatformBrowser(this.platformId)) {
+        import('leaflet').then((module) => {
+          const L = module.default; // Accès explicite à "default"
+      
+          L.Icon.Default.imagePath = '/';
+          this.initializeMap(L);
+          this.addMarkers(L);
+          this.centerMap(L);
+        }).catch((error) => {
+          console.error('Erreur de chargement de Leaflet:', error);
+        });
+      //const L = await import('leaflet'); // Import dynamique de leaflet
 
       // Définissez le chemin des icônes après l'importation
-      L.Icon.Default.imagePath = '/';
+      //L.Icon.Default.imagePath = '/';
 
-      this.initializeMap(L);
-      this.addMarkers(L);
-      this.centerMap(L);
+      // Retarder l'initialisation de la carte pour s'assurer que la div est rendue
+      /*setTimeout(() => {
+        this.initializeMap(L);
+        this.addMarkers(L);
+        this.centerMap(L);
+        this.map.invalidateSize();
+      }, 0);*/
     }
   }
 
