@@ -31,6 +31,9 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 Creer une connexion
 ssh -T git@github.com
 
+## Local
+ng serve --configuration=development
+
 ## Deploy Firebase
 ng build --configuration=production
 firebase deploy

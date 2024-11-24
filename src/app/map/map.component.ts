@@ -1,64 +1,65 @@
 import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { LocationService } from '../services/location.service';
+import { WebSocketService } from '../services/websocket.service';
 import { Location } from '../models/location.model';
-import * as L from 'leaflet';
+//import * as L from 'leaflet';
 
-declare var window: any; 
+//declare var window: any; 
 
 @Component({
   selector: 'app-map',
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
   standalone: true,
-  providers: [LocationService]
+  providers: [LocationService, WebSocketService]
 })
 export class MapComponent implements OnInit, AfterViewInit {
   private map!: any;
-  private markers: any[] = [
-    { lat: 31.9539, lng: 35.9106 }, // Amman
-    { lat: 32.5568, lng: 35.8469 }  // Irbid
-  ];
+  private L: any;
+  private markers: any[] = [];
+  //  { lat: 31.9539, lng: 35.9106 }, // Amman
+  //  { lat: 32.5568, lng: 35.8469 }  // Irbid
+  // ];
 
-  constructor(@Inject(PLATFORM_ID) private platformId: Object, private locationService: LocationService) { }
+  constructor(
+    @Inject(PLATFORM_ID) private platformId: Object,
+    private locationService: LocationService,
+    private webSocketService: WebSocketService
+  ) { }
 
   ngOnInit() {
+    // Charger les locations initiales depuis l'API
     this.locationService.getAllLocations().subscribe({
       next: (locations: Location[]) => {
         this.markers = this.locationService.mapLocationsToMarkers(locations);
+        //this.addMarkersToMap(); // Ajoutez les marqueurs initiaux
       },
       error: (error) => {
-        console.error("Erreur lors de la récupération des locations :", error);
+        console.error('Erreur lors de la récupération des locations:', error);
       }
     });
-   }
+
+    // Écouter les nouvelles positions via WebSocket
+    this.webSocketService.getNewLocation().subscribe((location: Location | null) => {
+      if (location) {
+        this.addMarker(location); // Ajoutez le nouveau marqueur à la carte
+      }
+    });
+  }
 
   async ngAfterViewInit() {
-    // Vérifiez que nous sommes dans un environnement navigateur
-    //if (typeof window !== 'undefined' && typeof window.document !== 'undefined') {
-      if (isPlatformBrowser(this.platformId)) {
-        import('leaflet').then((module) => {
-          const L = module.default; // Accès explicite à "default"
-      
-          L.Icon.Default.imagePath = '/';
-          this.initializeMap(L);
-          this.addMarkers(L);
-          this.centerMap(L);
-        }).catch((error) => {
-          console.error('Erreur de chargement de Leaflet:', error);
-        });
-      //const L = await import('leaflet'); // Import dynamique de leaflet
+    if (isPlatformBrowser(this.platformId)) {
+      import('leaflet').then((module) => {
+        this.L = module.default; // Accès explicite à "default"
+        this.L.Icon.Default.imagePath = '/';
 
-      // Définissez le chemin des icônes après l'importation
-      //L.Icon.Default.imagePath = '/';
-
-      // Retarder l'initialisation de la carte pour s'assurer que la div est rendue
-      /*setTimeout(() => {
-        this.initializeMap(L);
-        this.addMarkers(L);
-        this.centerMap(L);
-        this.map.invalidateSize();
-      }, 0);*/
+        this.initializeMap(this.L);
+        this.addMarkersToMap(this.L);
+        this.centerMap(this.L);
+      }).catch((error) => {
+        console.error('Erreur de chargement de Leaflet:', error);
+      });
     }
   }
 
@@ -68,16 +69,24 @@ export class MapComponent implements OnInit, AfterViewInit {
     L.tileLayer(baseMapURl).addTo(this.map);
   }
 
-  private addMarkers(L: any) {
-    // Ajoutez les marqueurs à la carte après l'import de L
+  private addMarkersToMap(L: any) {
     this.markers.forEach(({ lat, lng }) => {
       const marker = L.marker([lat, lng]);
       marker.addTo(this.map);
     });
   }
 
+  private addMarker(location: Location) {
+    //const newMarkers = this.locationService.mapLocationsToMarkers([location]);
+    const marker = this.L.marker([location.location.y, location.location.x]); // Ajoutez le marqueur pour la nouvelle position
+    marker.addTo(this.map);
+    this.markers.push(marker); // Met à jour la liste locale des marqueurss
+    this.centerMap(this.L);
+  }
+
   private centerMap(L: any) {
-    // Créez un objet LatLngBounds pour ajuster la vue de la carte aux marqueurs
+    if (this.markers.length === 0) return;
+    //const bounds = L.latLngBounds(this.markers.map((marker: any) => marker.getLatLng()));
     const bounds = L.latLngBounds(this.markers.map(({ lat, lng }) => L.latLng(lat, lng)));
     this.map.fitBounds(bounds);
   }
