@@ -37,3 +37,6 @@ ng serve --configuration=development
 ## Deploy Firebase
 ng build --configuration=production
 firebase deploy
+
+Urls:
+https://mapviewer-72be0.firebaseapp.com/

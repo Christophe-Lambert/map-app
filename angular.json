@@ -76,7 +76,10 @@
               "buildTarget": "map-viewer:build:production"
             },
             "development": {
-              "buildTarget": "map-viewer:build:development"
+              "buildTarget": "map-viewer:build:development",
+              "ssl": true,
+              "sslKey": "src/ssl/private.key",
+              "sslCert": "src/ssl/certificate.crt"
             }
           },
           "defaultConfiguration": "development"

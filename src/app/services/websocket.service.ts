@@ -10,13 +10,15 @@ import { Location } from '../models/location.model';
 export class WebSocketService {
   private client!: Client;
   private locationSubject = new BehaviorSubject<Location | null>(null);
+  //private wsUrl = 'http://138.2.172.84:8443/ws';
+  private wsUrl = 'https://localhost:8443/ws';
 
   constructor() {
     this.connect();
   }
 
   private connect() {
-    const socket = new SockJS('http://localhost:8080/ws'); // Remplacez par l'URL de votre endpoint WebSocket
+    const socket = new SockJS(this.wsUrl); // Remplacez par l'URL de votre endpoint WebSocket
     this.client = new Client({
       webSocketFactory: () => socket,
       debug: (str) => console.log(str), // Pour déboguer
