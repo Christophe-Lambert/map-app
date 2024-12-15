@@ -3,6 +3,7 @@ import { Client, Message } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
 import { BehaviorSubject, Observable } from 'rxjs';
 import { Location } from '../models/location.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
@@ -10,8 +11,7 @@ import { Location } from '../models/location.model';
 export class WebSocketService {
   private client!: Client;
   private locationSubject = new BehaviorSubject<Location | null>(null);
-  //private wsUrl = 'http://138.2.172.84:8443/ws';
-  private wsUrl = 'https://localhost:8443/ws';
+  private wsUrl = environment.wsUrl;
 
   constructor() {
     this.connect();
@@ -29,6 +29,7 @@ export class WebSocketService {
       console.log('WebSocket connecté');
       this.client.subscribe('/topic/locations', (message: Message) => {
         const location: Location = JSON.parse(message.body);
+        console.log(location);
         this.locationSubject.next(location); // Diffuse la nouvelle position
       });
     };

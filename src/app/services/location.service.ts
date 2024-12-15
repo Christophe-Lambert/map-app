@@ -2,13 +2,13 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Location } from '../models/location.model';
+import { environment } from '../../environments/environment';
 
 @Injectable({
   providedIn: 'root'
 })
 export class LocationService {
-  //private apiUrl = 'https://138.2.172.84:8443/api/locations/all';
-  private apiUrl = 'https://localhost:8443/api/locations/all';
+  private apiUrl = environment.apiUrl;
 
   constructor(private http: HttpClient) {}
 

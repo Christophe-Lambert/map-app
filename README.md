@@ -39,4 +39,4 @@ ng build --configuration=production
 firebase deploy
 
 Urls:
-https://mapviewer-72be0.firebaseapp.com/
+https://mapviewer-72be0.firebaseapp.com
