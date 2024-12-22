@@ -3,6 +3,7 @@ import { isPlatformBrowser } from '@angular/common';
 import { LocationService } from '../services/location.service';
 import { WebSocketService } from '../services/websocket.service';
 import { Location } from '../models/location.model';
+import { SvgIconService } from '../services/svg.icon.service'; 
 //import * as L from 'leaflet';
 
 //declare var window: any; 
@@ -12,27 +13,25 @@ import { Location } from '../models/location.model';
   templateUrl: './map.component.html',
   styleUrls: ['./map.component.scss'],
   standalone: true,
-  providers: [LocationService, WebSocketService]
+  providers: [LocationService, WebSocketService, SvgIconService]
 })
 export class MapComponent implements OnInit, AfterViewInit {
   private map!: any;
   private L: any;
   private markers: any[] = [];
-  //  { lat: 31.9539, lng: 35.9106 }, // Amman
-  //  { lat: 32.5568, lng: 35.8469 }  // Irbid
-  // ];
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
     private locationService: LocationService,
-    private webSocketService: WebSocketService
+    private webSocketService: WebSocketService,
+    private svgIconService: SvgIconService ,
   ) { }
 
   ngOnInit() {
     // Charger les locations initiales depuis l'API
     this.locationService.getAllLocations().subscribe({
       next: (locations: Location[]) => {
-        this.markers = this.locationService.mapLocationsToMarkers(locations);
+        this.markers = locations;//this.locationService.mapLocationsToMarkers(locations);
         //this.addMarkersToMap(); // Ajoutez les marqueurs initiaux
       },
       error: (error) => {
@@ -54,40 +53,55 @@ export class MapComponent implements OnInit, AfterViewInit {
         this.L = module.default; // Accès explicite à "default"
         this.L.Icon.Default.imagePath = '/';
 
-        this.initializeMap(this.L);
-        this.addMarkersToMap(this.L);
-        this.centerMap(this.L);
+        this.initializeMap();
+        this.addMarkersToMap();
+        this.centerMap();
       }).catch((error) => {
         console.error('Erreur de chargement de Leaflet:', error);
       });
     }
   }
 
-  private initializeMap(L: any) {
+  private initializeMap() {
     const baseMapURl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-    this.map = L.map('map');
-    L.tileLayer(baseMapURl).addTo(this.map);
+    this.map = this.L.map('map');
+    this.L.tileLayer(baseMapURl).addTo(this.map);
   }
 
-  private addMarkersToMap(L: any) {
-    this.markers.forEach(({ lat, lng }) => {
-      const marker = L.marker([lat, lng]);
+  private addMarkersToMap() {
+    this.markers.forEach(async (location: Location) => {
+      const marker = await this.createMarker(location);
       marker.addTo(this.map);
     });
   }
 
-  private addMarker(location: Location) {
-    //const newMarkers = this.locationService.mapLocationsToMarkers([location]);
-    const marker = this.L.marker([location.location.y, location.location.x]); // Ajoutez le marqueur pour la nouvelle position
+  private async addMarker(location: Location) {
+    const marker = await this.createMarker(location);
     marker.addTo(this.map);
     this.markers.push(marker); // Met à jour la liste locale des marqueurss
-    this.centerMap(this.L);
+    this.centerMap();
   }
 
-  private centerMap(L: any) {
+  private centerMap() {
     if (this.markers.length === 0) return;
-    //const bounds = L.latLngBounds(this.markers.map((marker: any) => marker.getLatLng()));
-    const bounds = L.latLngBounds(this.markers.map(({ lat, lng }) => L.latLng(lat, lng)));
+    const bounds = this.L.latLngBounds(this.markers.map((location) => this.L.latLng(location.location.y, location.location.x)));
     this.map.fitBounds(bounds);
+  }
+
+  private async createMarker(location: Location) {
+    const icon = await this.createSvgIcon('directions_bus', 'blue');
+    const marker = this.L.marker([location.location.y, location.location.x], { icon: icon});
+    return marker;
+  }
+
+  private async createSvgIcon(iconText: any, color: any) {
+    const svg = await this.svgIconService.generateSvgIcon(iconText, color);
+
+    return this.L.divIcon({
+      html: svg,
+      className: '', // Pas de classe CSS
+      iconSize: [25, 41], // Taille du marqueur
+      iconAnchor: [12.5, 41] // Pointe de la goutte en bas
+    });
   }
 }

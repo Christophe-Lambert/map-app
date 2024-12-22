@@ -32,6 +32,7 @@ Creer une connexion
 ssh -T git@github.com
 
 ## Local
+ng build --configuration=development
 ng serve --configuration=development
 
 ## Deploy Firebase

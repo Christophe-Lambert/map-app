@@ -27,6 +27,7 @@
     "crypto-browserify": "^3.12.1",
     "express": "^4.18.2",
     "leaflet": "^1.9.4",
+    "material-icons": "^1.13.12",
     "rxjs": "~7.8.0",
     "sockjs-client": "^1.6.1",
     "stream-browserify": "^3.0.0",

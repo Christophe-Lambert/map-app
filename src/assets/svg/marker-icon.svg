@@ -1,0 +1,12 @@
+    <svg xmlns="http://www.w3.org/2000/svg" width="50" height="41" viewBox="0 0 50 41">
+      <!-- Ombre -->
+      <ellipse cx="22" cy="36" rx="12" ry="5" fill="rgba(0, 0, 0, 0.2)" />
+      <!-- Goutte extérieure -->
+      <path d="M12.5,0 C19,0 25,6 25,13 C25,22 12.5,41 12.5,41 C12.5,41 0,22 0,13 C0,6 6,0 12.5,0 Z" fill="${color}" />
+      <!-- Cercle intérieur -->
+      <circle cx="12.5" cy="13" r="8" fill="white" />
+      <!-- Icône Material -->
+      <text x="12.5" y="19" font-size="13" text-anchor="middle" fill="${color}" font-family="Material Icons">
+        ${iconText}
+      </text>
+    </svg>
