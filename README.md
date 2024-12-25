@@ -29,7 +29,7 @@ To get more help on the Angular CLI use `ng help` or go check out the [Angular C
 
 ## Github
 Creer une connexion
-ssh -T git@github.com
+
 
 ## Local
 ng build --configuration=development
