@@ -1,12 +1,10 @@
 import { Component, OnInit, AfterViewInit, Inject, PLATFORM_ID } from '@angular/core';
-import { isPlatformBrowser } from '@angular/common';
 import { LocationService } from '../services/location.service';
 import { WebSocketService } from '../services/websocket.service';
 import { Location } from '../models/location.model';
-import { SvgIconService } from '../services/svg.icon.service'; 
-//import * as L from 'leaflet';
-
-//declare var window: any; 
+import { SvgIconService } from '../services/svg.icon.service';
+import * as L from 'leaflet';
+//import 'leaflet.markercluster'; 
 
 @Component({
   selector: 'app-map',
@@ -17,8 +15,8 @@ import { SvgIconService } from '../services/svg.icon.service';
 })
 export class MapComponent implements OnInit, AfterViewInit {
   private map!: any;
-  private L: any;
   private markers: any[] = [];
+  private markerClusterGroup: any; 
 
   constructor(
     @Inject(PLATFORM_ID) private platformId: Object,
@@ -32,7 +30,8 @@ export class MapComponent implements OnInit, AfterViewInit {
     this.locationService.getAllLocations().subscribe({
       next: (locations: Location[]) => {
         this.markers = locations;//this.locationService.mapLocationsToMarkers(locations);
-        //this.addMarkersToMap(); // Ajoutez les marqueurs initiaux
+        this.addMarkersToMap();
+        this.centerMap();
       },
       error: (error) => {
         console.error('Erreur lors de la récupération des locations:', error);
@@ -48,56 +47,64 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   async ngAfterViewInit() {
-    if (isPlatformBrowser(this.platformId)) {
-      import('leaflet').then((module) => {
-        this.L = module.default; // Accès explicite à "default"
-        this.L.Icon.Default.imagePath = '/';
-
+    //if (isPlatformBrowser(this.platformId)) {
+        L.Icon.Default.imagePath = '/';
         this.initializeMap();
-        this.addMarkersToMap();
-        this.centerMap();
-      }).catch((error) => {
-        console.error('Erreur de chargement de Leaflet:', error);
-      });
-    }
+    //}
   }
 
   private initializeMap() {
     const baseMapURl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-    this.map = this.L.map('map');
-    this.L.tileLayer(baseMapURl).addTo(this.map);
+    //this.map = L.map('map');
+    this.map = L.map('map', {
+      center: [ 39.8282, -98.5795 ],
+      zoom: 3
+    });
+
+    const tiles = L.tileLayer(baseMapURl, {
+      maxZoom: 18,
+      minZoom: 3,
+      attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+    });
+
+    tiles.addTo(this.map);
+    //this.markerClusterGroup = this.L.markerClusterGroup();
   }
 
   private addMarkersToMap() {
     this.markers.forEach(async (location: Location) => {
       const marker = await this.createMarker(location);
       marker.addTo(this.map);
+      //this.markerClusterGroup.addLayer(marker);
+      //this.map.addLayer(this.markerClusterGroup);
     });
   }
 
   private async addMarker(location: Location) {
     const marker = await this.createMarker(location);
     marker.addTo(this.map);
-    this.markers.push(marker); // Met à jour la liste locale des marqueurss
+    //this.markers.push(marker); // Met à jour la liste locale des marqueurss
+    //this.markerClusterGroup.addLayer(marker); // Ajouter le nouveau marqueur au groupe de clusters
+    this.markers.push(marker); // Met à jour la liste locale des marqueurs
     this.centerMap();
   }
 
   private centerMap() {
     if (this.markers.length === 0) return;
-    const bounds = this.L.latLngBounds(this.markers.map((location) => this.L.latLng(location.location.y, location.location.x)));
+    const bounds = L.latLngBounds(this.markers.map((location) => L.latLng(location.location.y, location.location.x)));
     this.map.fitBounds(bounds);
   }
 
   private async createMarker(location: Location) {
     const icon = await this.createSvgIcon('directions_bus', 'blue');
-    const marker = this.L.marker([location.location.y, location.location.x], { icon: icon});
+    const marker = L.marker([location.location.y!, location.location.x!], { icon: icon});
     return marker;
   }
 
   private async createSvgIcon(iconText: any, color: any) {
     const svg = await this.svgIconService.generateSvgIcon(iconText, color);
 
-    return this.L.divIcon({
+    return L.divIcon({
       html: svg,
       className: '', // Pas de classe CSS
       iconSize: [25, 41], // Taille du marqueur
