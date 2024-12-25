@@ -4,7 +4,7 @@ import { WebSocketService } from '../services/websocket.service';
 import { Location } from '../models/location.model';
 import { SvgIconService } from '../services/svg.icon.service';
 import * as L from 'leaflet';
-//import 'leaflet.markercluster'; 
+import 'leaflet.markercluster'; 
 
 @Component({
   selector: 'app-map',
@@ -47,15 +47,12 @@ export class MapComponent implements OnInit, AfterViewInit {
   }
 
   async ngAfterViewInit() {
-    //if (isPlatformBrowser(this.platformId)) {
-        L.Icon.Default.imagePath = '/';
-        this.initializeMap();
-    //}
+      this.initializeMap();
   }
 
   private initializeMap() {
+    L.Icon.Default.imagePath = '/';
     const baseMapURl = 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
-    //this.map = L.map('map');
     this.map = L.map('map', {
       center: [ 39.8282, -98.5795 ],
       zoom: 3
@@ -68,23 +65,21 @@ export class MapComponent implements OnInit, AfterViewInit {
     });
 
     tiles.addTo(this.map);
-    //this.markerClusterGroup = this.L.markerClusterGroup();
+    this.markerClusterGroup = L.markerClusterGroup();
   }
 
   private addMarkersToMap() {
     this.markers.forEach(async (location: Location) => {
       const marker = await this.createMarker(location);
-      marker.addTo(this.map);
-      //this.markerClusterGroup.addLayer(marker);
-      //this.map.addLayer(this.markerClusterGroup);
+      this.markerClusterGroup.addLayer(marker);
+      this.map.addLayer(this.markerClusterGroup);
     });
   }
 
   private async addMarker(location: Location) {
     const marker = await this.createMarker(location);
     marker.addTo(this.map);
-    //this.markers.push(marker); // Met à jour la liste locale des marqueurss
-    //this.markerClusterGroup.addLayer(marker); // Ajouter le nouveau marqueur au groupe de clusters
+    this.markerClusterGroup.addLayer(marker); // Ajouter le nouveau marqueur au groupe de clusters
     this.markers.push(marker); // Met à jour la liste locale des marqueurs
     this.centerMap();
   }
