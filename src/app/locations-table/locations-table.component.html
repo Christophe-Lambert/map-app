@@ -1,0 +1,35 @@
+<div class="mat-elevation-z8">
+    <table mat-table [dataSource]="dataSource" matSort class="mat-table">
+
+        <!-- ID Column -->
+        <ng-container matColumnDef="id">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>ID</th>
+            <td mat-cell *matCellDef="let element">{{ element.id }}</td>
+        </ng-container>
+
+        <!-- Name Column -->
+        <ng-container matColumnDef="name">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Nom</th>
+            <td mat-cell *matCellDef="let element">{{ element.name }}</td>
+        </ng-container>
+
+        <!-- Latitude Column -->
+        <ng-container matColumnDef="latitude">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Latitude</th>
+            <td mat-cell *matCellDef="let element">{{ element.latitude }}</td>
+        </ng-container>
+
+        <!-- Longitude Column -->
+        <ng-container matColumnDef="longitude">
+            <th mat-header-cell *matHeaderCellDef mat-sort-header>Longitude</th>
+            <td mat-cell *matCellDef="let element">{{ element.longitude }}</td>
+        </ng-container>
+
+        <!-- Header and Row Definitions -->
+        <tr mat-header-row *matHeaderRowDef="displayedColumns"></tr>
+        <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+    </table>
+
+    <mat-paginator #paginator class="paginator" [length]="100" [pageSize]="10" [pageSizeOptions]="[5, 10, 25, 100]"
+        aria-label="Select page" showFirstLastButtons />
+</div>
