@@ -1,7 +1,9 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { MatTableDataSource, MatTableModule } from '@angular/material/table';
 import { MatPaginator, MatPaginatorModule } from '@angular/material/paginator';
+import { MatIconModule } from '@angular/material/icon';
 import { MatSort, MatSortModule } from '@angular/material/sort';
+import { CommonModule } from '@angular/common';
 import { LocationService } from '../services/location.service';
 import { Location } from '../models/location.model';
 
@@ -10,13 +12,16 @@ import { Location } from '../models/location.model';
   standalone: true,
   imports: [MatTableModule,
     MatPaginatorModule,
-    MatSortModule],
+    MatSortModule,    
+    MatIconModule,
+    CommonModule,
+  ],
   providers: [LocationService],
   templateUrl: './locations-table.component.html',
   styleUrl: './locations-table.component.css'
 })
 export class LocationsTableComponent implements OnInit {
-  displayedColumns: string[] = ['id', 'name', 'latitude', 'longitude'];
+  displayedColumns: string[] = ['icon', 'id', 'name', 'latitude', 'longitude'];
   dataSource = new MatTableDataSource<Location>();
 
   @ViewChild(MatPaginator) paginator!: MatPaginator;
