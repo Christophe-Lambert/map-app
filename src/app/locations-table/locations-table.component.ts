@@ -6,6 +6,7 @@ import { MatSort, MatSortModule } from '@angular/material/sort';
 import { CommonModule } from '@angular/common';
 import { LocationService } from '../services/location.service';
 import { Location } from '../models/location.model';
+import { MapInteractionService } from '../services/map-interaction.service';
 
 @Component({
   selector: 'app-locations-table',
@@ -27,7 +28,7 @@ export class LocationsTableComponent implements OnInit {
   @ViewChild(MatPaginator) paginator!: MatPaginator;
   @ViewChild(MatSort) sort!: MatSort;
 
-  constructor(private locationService: LocationService) { }
+  constructor(private locationService: LocationService, private mapInteractionService: MapInteractionService) { }
 
   ngOnInit(): void {
     this.locationService.getAllLocations().subscribe({
@@ -45,5 +46,12 @@ export class LocationsTableComponent implements OnInit {
   applyFilter(event: Event): void {
     const filterValue = (event.target as HTMLInputElement).value;
     this.dataSource.filter = filterValue.trim().toLowerCase();
+  }
+
+  onRowClick(row: any): void {
+    const lat = row.location.y;
+    const lng = row.location.x;
+
+    this.mapInteractionService.flyTo(lat, lng);
   }
 }

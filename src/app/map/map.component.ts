@@ -6,6 +6,8 @@ import { SvgIconService } from '../services/svg.icon.service';
 import * as L from 'leaflet';
 import 'leaflet.markercluster';
 import * as d3 from 'd3';
+import { MapInteractionService } from '../services/map-interaction.service';
+import { Subscription } from 'rxjs';
 
 @Component({
   selector: 'app-map',
@@ -18,12 +20,13 @@ export class MapComponent implements OnInit, AfterViewInit {
   private map!: any;
   private markers: Location[] = [];
   private markerClusterGroup: any;
-  private colorScale = d3.scaleOrdinal(d3.schemeCategory10);
+  private subscription: Subscription | undefined;
 
   constructor(
     private locationService: LocationService,
     private webSocketService: WebSocketService,
     private svgIconService: SvgIconService,
+    private mapInteractionService: MapInteractionService,
   ) { }
 
   ngOnInit() {
@@ -44,10 +47,25 @@ export class MapComponent implements OnInit, AfterViewInit {
         this.addMarker(location); // Ajouter le nouveau marqueur à la carte
       }
     });
+
+    this.subscription = this.mapInteractionService.flyTo$.subscribe((coords) => {
+      this.flyTo(coords.lat, coords.lng);
+    });
   }
 
   async ngAfterViewInit() {
     this.initializeMap();
+  }
+
+  flyTo(lat: number, lng: number): void {
+    this.map.flyTo([lat, lng], 12);
+  }
+
+  ngOnDestroy(): void {
+    // Désabonnez-vous pour éviter les fuites de mémoire
+    if (this.subscription) {
+      this.subscription.unsubscribe();
+    }
   }
 
   private initializeMap() {
