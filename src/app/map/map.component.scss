@@ -39,3 +39,28 @@
     font-size: 12px;
     color: #333;
 }
+
+.map-toolbar {
+    position: absolute; /* Positionnement absolu par rapport au conteneur parent */
+    top: 10px;          /* Décalage depuis le haut */
+    right: 10px;        /* Décalage depuis la droite */
+    z-index: 1000;      /* Assurez-vous que la barre d'outils est visible au-dessus de la carte */
+    background: white;  /* Couleur de fond pour améliorer la lisibilité */
+    border: 1px solid #ccc; /* Bordure discrète */
+    padding: 5px 10px;  /* Espacement interne */
+    border-radius: 5px; /* Coins arrondis */
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3); /* Ombre pour effet d'élévation */
+  }
+  
+  .map-toolbar button {
+    background: #007bff; /* Couleur du bouton */
+    color: white;        /* Couleur du texte */
+    border: none;        /* Supprimer les bordures */
+    padding: 5px 10px;   /* Espacement interne */
+    border-radius: 3px;  /* Coins légèrement arrondis */
+    cursor: pointer;     /* Curseur en forme de main */
+  }
+  
+  .map-toolbar button:hover {
+    background: #0056b3; /* Couleur du bouton au survol */
+  }

@@ -21,6 +21,7 @@ export class MapComponent implements OnInit, AfterViewInit {
   private markers: Location[] = [];
   private markerClusterGroup: any;
   private subscription: Subscription | undefined;
+  isSpiderEnabled = true; 
 
   constructor(
     private locationService: LocationService,
@@ -85,6 +86,9 @@ export class MapComponent implements OnInit, AfterViewInit {
 
     // Configurer le groupe de clusters avec une fonction `iconCreateFunction`
     this.markerClusterGroup = L.markerClusterGroup({
+      spiderfyOnMaxZoom: this.isSpiderEnabled,
+      showCoverageOnHover: true,
+      zoomToBoundsOnClick: true,
       iconCreateFunction: (cluster) => {
         const markers = cluster.getAllChildMarkers();
         const typeCounts = this.getClusterTypeCounts(markers);
@@ -137,15 +141,6 @@ export class MapComponent implements OnInit, AfterViewInit {
     });
 
     this.map.addLayer(this.markerClusterGroup);
-  }
-
-  private getClusterTypeCountsOld(markers: any[]): { [key: string]: number } {
-    const counts: { [key: string]: number } = {};
-    markers.forEach((marker: any) => {
-      const name = marker.options.title || 'Inconnu';
-      counts[name] = (counts[name] || 0) + 1;
-    });
-    return counts;
   }
 
   private getClusterTypeCounts(markers: any[]): { [key: string]: { count: number, color: string } } {
@@ -267,6 +262,35 @@ export class MapComponent implements OnInit, AfterViewInit {
       className: '',
       iconSize: [25, 41],
       iconAnchor: [12.5, 41],
+    });
+  }
+
+  toggleSpiderMode() {
+    this.isSpiderEnabled = !this.isSpiderEnabled;
+  
+    if (this.markerClusterGroup) {
+      this.markerClusterGroup.options.spiderfyOnMaxZoom = this.isSpiderEnabled;
+  
+      // Rafraîchir les clusters pour appliquer les nouvelles options
+      this.markerClusterGroup.refreshClusters();
+  
+      // Si le mode spider est activé, forcez l'effet spider sur les clusters visibles
+      if (this.isSpiderEnabled) {
+        this.forceSpiderfy();
+      }
+    } else {
+      console.error("markerClusterGroup n'est pas initialisé.");
+    }
+  }  
+
+  private forceSpiderfy() {
+    // Parcourir tous les clusters visibles
+    this.markerClusterGroup.eachLayer((layer: any) => {
+      // Vérifiez si le layer est un cluster valide
+      if (layer instanceof L.MarkerCluster && layer.getChildCount && layer.getChildCount() > 1) {
+        // Si le cluster a plusieurs enfants, déclencher spiderfy
+        layer.spiderfy();
+      }
     });
   }
 }
